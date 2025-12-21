@@ -1,0 +1,10 @@
+t=2025-12-21T15:01:07-0500 lvl=info msg="no configuration paths supplied"
+t=2025-12-21T15:01:07-0500 lvl=info msg="using configuration at default config path" path="/Users/dharsanguruparan/Library/Application Support/ngrok/ngrok.yml"
+t=2025-12-21T15:01:07-0500 lvl=info msg="open config file" path="/Users/dharsanguruparan/Library/Application Support/ngrok/ngrok.yml" err=nil
+t=2025-12-21T15:01:07-0500 lvl=info msg="FIPS 140 mode" enabled=false
+t=2025-12-21T15:01:07-0500 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2025-12-21T15:01:08-0500 lvl=info msg="client session established" obj=tunnels.session
+t=2025-12-21T15:01:08-0500 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2025-12-21T15:01:08-0500 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:3000 url=https://edwina-uncajoling-lawson.ngrok-free.dev
+t=2025-12-21T15:05:03-0500 lvl=info msg="received stop request" obj=app stopReq="{err:<nil> restart:false}"
+t=2025-12-21T15:05:03-0500 lvl=info msg="session closing" obj=tunnels.session err=nil

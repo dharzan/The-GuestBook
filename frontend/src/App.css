@@ -1,0 +1,334 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem clamp(1rem, 4vw, 3rem);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.branding {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #9333ea);
+  color: white;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.app-subtitle {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.app-nav {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.app-nav a {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.app-nav a.active {
+  border-color: #d1d5db;
+  background: #eef2ff;
+  color: #1d4ed8;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.guest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.panel {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+}
+
+.panel-subtitle {
+  color: #6b7280;
+  margin: 0.3rem 0 1rem;
+}
+
+.message-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-form label {
+  font-weight: 600;
+  color: #111827;
+}
+
+.message-form textarea {
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  padding: 0.9rem;
+  resize: vertical;
+  font-size: 1rem;
+  min-height: 150px;
+}
+
+.message-form button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.65rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.message-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.form-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.message-success,
+.message-error {
+  margin-top: 0.9rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #ecfccb;
+  color: #3f6212;
+  font-weight: 500;
+}
+
+.message-error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.admin-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.ghost-button {
+  border: 1px solid #d1d5db;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ghost-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.message-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.message-card audio {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.message-text {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.message-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.empty-state {
+  color: #6b7280;
+}
+
+.app-footer {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.admin-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.admin-columns h3 {
+  margin-top: 0;
+}
+
+.voice-card {
+  border: 1px dashed #dbeafe;
+  border-radius: 16px;
+  padding: 1rem;
+  background: #eff6ff;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.voice-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.voice-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.voice-subtitle {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.voice-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.timer-display {
+  font-family: 'Roboto Mono', 'SFMono-Regular', Consolas, monospace;
+  font-size: 1.25rem;
+  margin: 0;
+  color: #1e293b;
+}
+
+.record-btn,
+.stop-btn,
+.voice-actions button {
+  border-radius: 999px;
+  border: none;
+  padding: 0.55rem 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+.record-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.stop-btn {
+  background: #0ea5e9;
+  color: white;
+}
+
+.voice-preview audio {
+  width: 100%;
+}
+
+.voice-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.voice-preview input {
+  border-radius: 10px;
+  border: 1px solid #cbd5f5;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+}
+
+.voice-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 1.5rem 1rem;
+  }
+
+  .panel {
+    padding: 1rem;
+  }
+
+  .voice-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
