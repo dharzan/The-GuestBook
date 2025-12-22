@@ -219,7 +219,7 @@ export default function VoiceRecorder() {
         </div>
       )}
 
-      {state === 'success' && <div className="message-success">✅ Voice note saved!</div>}
+      {state === 'success' && <div className="message-success">Voice note saved!</div>}
       {state === 'error' && error && <div className="message-error">⚠️ {error}</div>}
     </div>
   )

@@ -9,11 +9,11 @@ if command -v docker >/dev/null 2>&1; then
   if docker compose up -d postgres; then
     echo "→ Postgres started"
   else
-    echo "⚠️  Could not start Postgres via docker compose. Make sure Docker Desktop is running or start Postgres manually, then re-run this script."
+    echo "WARNING: Could not start Postgres via docker compose. Make sure Docker Desktop is running or start Postgres manually, then re-run this script."
     exit 1
   fi
 else
-  echo "⚠️  Docker not installed. Start Postgres manually (see docker-compose.yml) and re-run."
+  echo "WARNING: Docker not installed. Start Postgres manually (see docker-compose.yml) and re-run."
   exit 1
 fi
 

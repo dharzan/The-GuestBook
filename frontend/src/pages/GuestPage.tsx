@@ -59,10 +59,9 @@ export default function GuestPage() {
           </div>
         </form>
         {status === 'success' && (
-          <div className="message-success">✅ Thanks! Your message is on its way.</div>
+          <div className="message-success">Thanks! Your message is on its way.</div>
         )}
-        {status === 'error' && error && <div className="message-error">⚠️ {error}</div>}
-      </section>
+        {status === 'error' && error && <div className="message-error">Error: {error}</div>}      </section>
 
       <section className="panel">
         <h2>Prefer to speak?</h2>

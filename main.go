@@ -81,7 +81,7 @@ func main() {
 	}
 	srv.gqlSchema = schema
 	if adminUser == "" || adminPass == "" {
-		log.Println("⚠️  ADMIN_USERNAME/ADMIN_PASSWORD not set. Admin routes are unprotected.")
+		log.Println("WARNING: ADMIN_USERNAME/ADMIN_PASSWORD not set. Admin routes are unprotected.")
 	}
 
 	mux := http.NewServeMux()

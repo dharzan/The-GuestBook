@@ -9,10 +9,10 @@ if command -v docker >/dev/null 2>&1; then
   if docker compose up -d postgres; then
     echo "→ Postgres container is up"
   else
-    echo "⚠️  Could not start Postgres via docker compose. Ensure Postgres is running on 5432 and rerun."
+    echo "WARNING: Could not start Postgres via docker compose. Ensure Postgres is running on 5432 and rerun."
   fi
 else
-  echo "⚠️  Docker not found; skipping Postgres start. Ensure Postgres is running on 5432."
+  echo "WARNING: Docker not found; skipping Postgres start. Ensure Postgres is running on 5432."
 fi
 
 if [ -f "$ROOT/.env" ]; then

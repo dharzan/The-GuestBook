@@ -47,7 +47,7 @@ export default function App() {
         </button>
       </header>
 
-      {status === 'error' && <div className="alert">⚠️ {error}</div>}
+      {status === 'error' && <div className="alert">Warning: {error}</div>}
 
       <div className="columns">
         <section className="panel">
