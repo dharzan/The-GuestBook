@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "builds": [{ "src": "package.json", "use": "@vercel/static-build" }],
+  "routes": [{ "src": "/(.*)", "dest": "/index.html" }],
+  "env": {
+    "VITE_API_BASE": "https://your-ngrok-host.ngrok-free.app"
+  }
+}

@@ -94,3 +94,8 @@ Visit the dev server URL (default `http://localhost:5173`) to see text messages 
 - Swap ngrok with Cloudflare Tunnel if you want a custom domain.
 - Add auth/rate limiting around `/admin` if the QR is public.
 - Back up messages and voice blobs from Postgres if you need them permanently.
+
+### Deploying the guest frontend to Vercel
+- Point Vercel at `frontend/` and use the default Vite build (`npm run build`). A minimal `frontend/vercel.json` is included.
+- Set `VITE_API_BASE` in Vercel project settings to your public API URL (e.g., your ngrok/Cloudflare tunnel that exposes the Go server). For local tunnels, expect the URL to change per session unless you use a reserved domain.
+- Keep the Go API running and publicly reachable (ngrok/Cloudflare) while the Vercel app is in use.
