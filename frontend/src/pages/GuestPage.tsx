@@ -65,7 +65,7 @@ export default function GuestPage() {
 
       <section className="panel">
         <h2>Prefer to speak?</h2>
-        <p className="panel-subtitle">Record up to 60 seconds. Audio lives only on this computer.</p>
+        <p className="panel-subtitle">Record up to 60 seconds.</p>
         <VoiceRecorder />
       </section>
     </div>
