@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import GuestPage from './pages/GuestPage'
 import './App.css'
 
