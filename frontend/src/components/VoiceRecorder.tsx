@@ -179,7 +179,7 @@ export default function VoiceRecorder() {
     <div className="voice-card">
       <div className="voice-header">
         <p className="voice-title">Voice note</p>
-        <p className="voice-subtitle">Up to 60 seconds · stored locally</p>
+        <p className="voice-subtitle">Up to 60 seconds</p>
       </div>
 
       <div className="voice-controls">
