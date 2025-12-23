@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react'
 import VoiceRecorder from '../components/VoiceRecorder'
+import ThreeBackground from '../components/ThreeBackground'
 import { submitMessage } from '../lib/api'
 
 const MAX_LENGTH = 500
@@ -32,42 +33,46 @@ export default function GuestPage() {
   }
 
   return (
-    <div className="guest-grid">
-      <section className="panel">
-        <h2>Leave the couple a message</h2>
-        <p className="panel-subtitle">
-          This goes straight to their private guestbook. Keep it short and sweet!
-        </p>
-        <form className="message-form" onSubmit={handleSubmit}>
-          <label htmlFor="guest-message">Your message</label>
-          <textarea
-            id="guest-message"
-            name="text"
-            rows={5}
-            maxLength={MAX_LENGTH}
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            placeholder="Share your wish, tip, or favorite memory..."
-            disabled={status === 'loading'}
-            required
-          />
-          <div className="form-meta">
-            <span>{Math.max(0, remaining)} characters left</span>
-            <button type="submit" disabled={status === 'loading'}>
-              {status === 'loading' ? 'Sending…' : 'Send message'}
-            </button>
-          </div>
-        </form>
-        {status === 'success' && (
-          <div className="message-success">Thanks! Your message is on its way.</div>
-        )}
-        {status === 'error' && error && <div className="message-error">Error: {error}</div>}      </section>
+    <>
+      <ThreeBackground />
+      <div className="guest-grid">
+        <section className="panel">
+          <h2>Leave the couple a message</h2>
+          <p className="panel-subtitle">
+            This goes straight to their private guestbook. Keep it short and sweet!
+          </p>
+          <form className="message-form" onSubmit={handleSubmit}>
+            <label htmlFor="guest-message">Your message</label>
+            <textarea
+              id="guest-message"
+              name="text"
+              rows={5}
+              maxLength={MAX_LENGTH}
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="Share your wish, tip, or favorite memory..."
+              disabled={status === 'loading'}
+              required
+            />
+            <div className="form-meta">
+              <span>{Math.max(0, remaining)} characters left</span>
+              <button type="submit" disabled={status === 'loading'}>
+                {status === 'loading' ? 'Sending…' : 'Send message'}
+              </button>
+            </div>
+          </form>
+          {status === 'success' && (
+            <div className="message-success">Thanks! Your message is on its way.</div>
+          )}
+          {status === 'error' && error && <div className="message-error">Error: {error}</div>}
+        </section>
 
-      <section className="panel">
-        <h2>Prefer to speak?</h2>
-        <p className="panel-subtitle">Record up to 60 seconds.</p>
-        <VoiceRecorder />
-      </section>
-    </div>
+        <section className="panel">
+          <h2>Prefer to speak?</h2>
+          <p className="panel-subtitle">Record up to 60 seconds.</p>
+          <VoiceRecorder />
+        </section>
+      </div>
+    </>
   )
 }
