@@ -10,12 +10,14 @@ const API_BASE = resolveApiBase()
 
 type ApiMessage = {
   id: number
+  guestName: string
   text: string
   createdAt: string
 }
 
 type ApiVoiceMessage = {
   id: number
+  guestName: string
   note: string
   durationSeconds: number
   mimeType: string
@@ -25,12 +27,14 @@ type ApiVoiceMessage = {
 
 export type Message = {
   id: number
+  guestName: string
   text: string
   createdAt: string
 }
 
 export type VoiceMessage = {
   id: number
+  guestName: string
   note: string
   durationSeconds: number
   createdAt: string
@@ -79,6 +83,7 @@ export async function listMessages(signal?: AbortSignal): Promise<Message[]> {
       query Messages($limit: Int) {
         messages(limit: $limit) {
           id
+          guestName
           text
           createdAt
         }
@@ -88,6 +93,7 @@ export async function listMessages(signal?: AbortSignal): Promise<Message[]> {
   )
   return data.messages.map((item) => ({
     id: item.id,
+    guestName: item.guestName,
     text: item.text,
     createdAt: item.createdAt,
   }))
@@ -99,6 +105,7 @@ export async function listVoiceMessages(signal?: AbortSignal): Promise<VoiceMess
       query VoiceMessages($limit: Int) {
         voiceMessages(limit: $limit) {
           id
+          guestName
           note
           durationSeconds
           mimeType
@@ -111,6 +118,7 @@ export async function listVoiceMessages(signal?: AbortSignal): Promise<VoiceMess
   )
   return data.voiceMessages.map((item) => ({
     id: item.id,
+    guestName: item.guestName,
     note: item.note,
     durationSeconds: item.durationSeconds,
     createdAt: item.createdAt,

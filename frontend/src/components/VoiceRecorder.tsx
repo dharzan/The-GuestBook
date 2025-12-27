@@ -6,8 +6,14 @@ const PREFERRED_MIME_TYPES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4
 
 type RecorderState = 'idle' | 'recording' | 'preview' | 'uploading' | 'success' | 'error'
 
-export default function VoiceRecorder() {
+type VoiceRecorderProps = {
+  defaultName?: string
+  onNameChange?: (name: string) => void
+}
+
+export default function VoiceRecorder({ defaultName = '', onNameChange }: VoiceRecorderProps) {
   const [state, setState] = useState<RecorderState>('idle')
+  const [name, setName] = useState(defaultName)
   const [error, setError] = useState('')
   const [duration, setDuration] = useState(0)
   const [note, setNote] = useState('')
@@ -27,6 +33,10 @@ export default function VoiceRecorder() {
       setIsSupported(false)
     }
   }, [])
+
+  useEffect(() => {
+    setName((prev) => (prev ? prev : defaultName))
+  }, [defaultName])
 
   useEffect(() => {
     return () => {
@@ -146,11 +156,16 @@ export default function VoiceRecorder() {
   }
 
   const handleUpload = async () => {
+    if (!name.trim()) {
+      setError('Please enter your name before sending.')
+      setState('error')
+      return
+    }
     if (!audioBlob) return
     try {
       setState('uploading')
       setError('')
-      await submitVoiceMessage(audioBlob, duration, note)
+      await submitVoiceMessage(audioBlob, duration, note, name.trim())
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl)
       }
@@ -159,6 +174,8 @@ export default function VoiceRecorder() {
       setDuration(0)
       setState('success')
       setNote('')
+      setName(name.trim())
+      onNameChange?.(name.trim())
     } catch (err) {
       console.error(err)
       setState('error')
@@ -198,6 +215,20 @@ export default function VoiceRecorder() {
 
       {audioBlob && previewUrl && (
         <div className="voice-preview">
+          <label htmlFor="voice-name">Your name</label>
+          <input
+            id="voice-name"
+            type="text"
+            maxLength={80}
+            placeholder="Jane & John"
+            value={name}
+            onChange={(event) => {
+              setName(event.target.value)
+              onNameChange?.(event.target.value)
+            }}
+            disabled={state === 'uploading'}
+            required
+          />
           <audio controls src={previewUrl}></audio>
           <label htmlFor="voice-note">Caption (optional)</label>
           <input

@@ -2,12 +2,14 @@ const API_BASE = import.meta.env.VITE_API_BASE || ''
 
 type ApiMessage = {
   id: number
+  guest_name: string
   text: string
   created_at: string
 }
 
 type ApiVoiceMessage = {
   id: number
+  guest_name: string
   note: string
   duration_seconds: number
   mime_type: string
@@ -16,12 +18,14 @@ type ApiVoiceMessage = {
 
 export type Message = {
   id: number
+  guestName: string
   text: string
   createdAt: string
 }
 
 export type VoiceMessage = {
   id: number
+  guestName: string
   note: string
   durationSeconds: number
   createdAt: string
@@ -39,22 +43,28 @@ async function handleResponse(response: Response) {
   throw new Error(text || 'Request failed')
 }
 
-export async function submitMessage(text: string) {
+export async function submitMessage(name: string, text: string) {
   const response = await fetch(withApiBase('/message'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ name, text }),
   })
   await handleResponse(response)
 }
 
-export async function submitVoiceMessage(blob: Blob, durationSeconds: number, note: string) {
+export async function submitVoiceMessage(
+  blob: Blob,
+  durationSeconds: number,
+  note: string,
+  name: string,
+) {
   const form = new FormData()
   form.append('duration', String(durationSeconds))
   form.append('audio', blob, 'voice-message.webm')
+  form.append('name', name)
   if (note.trim()) {
     form.append('note', note.trim())
   }
@@ -75,6 +85,7 @@ export async function listMessages(): Promise<Message[]> {
   const payload = (await response.json()) as ApiMessage[]
   return payload.map((item) => ({
     id: item.id,
+    guestName: item.guest_name,
     text: item.text,
     createdAt: item.created_at,
   }))
@@ -90,6 +101,7 @@ export async function listVoiceMessages(): Promise<VoiceMessage[]> {
   const payload = (await response.json()) as ApiVoiceMessage[]
   return payload.map((item) => ({
     id: item.id,
+    guestName: item.guest_name,
     note: item.note,
     durationSeconds: item.duration_seconds,
     createdAt: item.created_at,

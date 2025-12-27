@@ -30,6 +30,7 @@ const (
 	maxAudioDurationSeconds = 60
 	maxAudioBytes           = 2 << 20 // 2MB
 	maxListLimit            = 200
+	maxNameLength           = 80
 )
 
 type server struct {
@@ -41,12 +42,14 @@ type server struct {
 
 type message struct {
 	ID        int       `json:"id"`
+	GuestName string    `json:"guest_name"`
 	Text      string    `json:"text"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type voiceMessageMetadata struct {
 	ID              int       `json:"id"`
+	GuestName       string    `json:"guest_name"`
 	Note            string    `json:"note"`
 	DurationSeconds int       `json:"duration_seconds"`
 	MimeType        string    `json:"mime_type"`
@@ -119,17 +122,41 @@ func (s *server) handleMessage(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
 	defer r.Body.Close()
 
-	text, err := messageTextFromRequest(r)
-	if err != nil {
-		http.Error(w, "invalid message payload", http.StatusBadRequest)
+	var payload struct {
+		Name string `json:"name"`
+		Text string `json:"text"`
+	}
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "invalid message payload", http.StatusBadRequest)
+			return
+		}
+	} else {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "invalid message payload", http.StatusBadRequest)
+			return
+		}
+		payload.Name = r.FormValue("name")
+		payload.Text = r.FormValue("text")
+	}
+
+	payload.Name = strings.TrimSpace(payload.Name)
+	payload.Text = strings.TrimSpace(payload.Text)
+
+	if payload.Name == "" {
+		http.Error(w, "name is required", http.StatusBadRequest)
 		return
 	}
-	text = strings.TrimSpace(text)
-	if text == "" {
+	if len([]rune(payload.Name)) > maxNameLength {
+		http.Error(w, "name is too long", http.StatusBadRequest)
+		return
+	}
+	if payload.Text == "" {
 		http.Error(w, "message cannot be empty", http.StatusBadRequest)
 		return
 	}
-	if len([]rune(text)) > maxMessageLength {
+	if len([]rune(payload.Text)) > maxMessageLength {
 		http.Error(w, "message too long", http.StatusBadRequest)
 		return
 	}
@@ -137,8 +164,8 @@ func (s *server) handleMessage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
 
-	const insertQuery = `INSERT INTO messages(text) VALUES ($1)`
-	if _, err := s.pool.Exec(ctx, insertQuery, text); err != nil {
+	const insertQuery = `INSERT INTO messages(guest_name, text) VALUES ($1, $2)`
+	if _, err := s.pool.Exec(ctx, insertQuery, payload.Name, payload.Text); err != nil {
 		log.Printf("insert message: %v", err)
 		http.Error(w, "failed to store message", http.StatusInternalServerError)
 		return
@@ -163,7 +190,7 @@ func (s *server) handleAdmin(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
 
-	rows, err := s.pool.Query(ctx, `SELECT id, text, created_at FROM messages ORDER BY created_at DESC LIMIT 200`)
+	rows, err := s.pool.Query(ctx, `SELECT id, guest_name, text, created_at FROM messages ORDER BY created_at DESC LIMIT 200`)
 	if err != nil {
 		log.Printf("query messages: %v", err)
 		http.Error(w, "failed to fetch messages", http.StatusInternalServerError)
@@ -174,7 +201,7 @@ func (s *server) handleAdmin(w http.ResponseWriter, r *http.Request) {
 	var messages []message
 	for rows.Next() {
 		var m message
-		if err := rows.Scan(&m.ID, &m.Text, &m.CreatedAt); err != nil {
+		if err := rows.Scan(&m.ID, &m.GuestName, &m.Text, &m.CreatedAt); err != nil {
 			log.Printf("scan message: %v", err)
 			http.Error(w, "failed to read messages", http.StatusInternalServerError)
 			return
@@ -265,13 +292,23 @@ func (s *server) handleVoiceMessageUpload(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	guestName := strings.TrimSpace(r.FormValue("name"))
+	if guestName == "" {
+		http.Error(w, "name is required", http.StatusBadRequest)
+		return
+	}
+	if len([]rune(guestName)) > maxNameLength {
+		http.Error(w, "name is too long", http.StatusBadRequest)
+		return
+	}
+
 	note := strings.TrimSpace(r.FormValue("note"))
 
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	const insertVoice = `INSERT INTO voice_messages (note, audio, mime_type, duration_seconds) VALUES ($1, $2, $3, $4)`
-	if _, err := s.pool.Exec(ctx, insertVoice, note, buf.Bytes(), mimeType, durationSeconds); err != nil {
+	const insertVoice = `INSERT INTO voice_messages (guest_name, note, audio, mime_type, duration_seconds) VALUES ($1, $2, $3, $4, $5)`
+	if _, err := s.pool.Exec(ctx, insertVoice, guestName, note, buf.Bytes(), mimeType, durationSeconds); err != nil {
 		log.Printf("insert voice message: %v", err)
 		http.Error(w, "failed to store voice message", http.StatusInternalServerError)
 		return
@@ -293,7 +330,7 @@ func (s *server) handleVoiceMessages(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
 
-	rows, err := s.pool.Query(ctx, `SELECT id, COALESCE(note, ''), duration_seconds, mime_type, created_at FROM voice_messages ORDER BY created_at DESC LIMIT 200`)
+	rows, err := s.pool.Query(ctx, `SELECT id, guest_name, COALESCE(note, ''), duration_seconds, mime_type, created_at FROM voice_messages ORDER BY created_at DESC LIMIT 200`)
 	if err != nil {
 		log.Printf("query voice messages: %v", err)
 		http.Error(w, "failed to fetch voice messages", http.StatusInternalServerError)
@@ -304,7 +341,7 @@ func (s *server) handleVoiceMessages(w http.ResponseWriter, r *http.Request) {
 	var payload []voiceMessageMetadata
 	for rows.Next() {
 		var vm voiceMessageMetadata
-		if err := rows.Scan(&vm.ID, &vm.Note, &vm.DurationSeconds, &vm.MimeType, &vm.CreatedAt); err != nil {
+		if err := rows.Scan(&vm.ID, &vm.GuestName, &vm.Note, &vm.DurationSeconds, &vm.MimeType, &vm.CreatedAt); err != nil {
 			log.Printf("scan voice message: %v", err)
 			http.Error(w, "failed to read voice messages", http.StatusInternalServerError)
 			return
@@ -490,18 +527,24 @@ func ensureSchema(ctx context.Context, pool *pgxpool.Pool) error {
 	const query = `
 CREATE TABLE IF NOT EXISTS messages (
   id SERIAL PRIMARY KEY,
+  guest_name TEXT NOT NULL DEFAULT '',
   text TEXT NOT NULL CHECK (char_length(text) <= 1000),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS voice_messages (
   id SERIAL PRIMARY KEY,
+  guest_name TEXT NOT NULL DEFAULT '',
   note TEXT,
   audio BYTEA NOT NULL,
   mime_type TEXT NOT NULL,
   duration_seconds INT NOT NULL CHECK (duration_seconds > 0 AND duration_seconds <= 60),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);`
+);
+
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS guest_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE voice_messages ADD COLUMN IF NOT EXISTS guest_name TEXT NOT NULL DEFAULT '';
+`
 	_, err := pool.Exec(ctx, query)
 	return err
 }
@@ -542,6 +585,7 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 		Name: "Message",
 		Fields: graphql.Fields{
 			"id":        &graphql.Field{Type: graphql.Int},
+			"guestName": &graphql.Field{Type: graphql.String},
 			"text":      &graphql.Field{Type: graphql.String},
 			"createdAt": &graphql.Field{Type: graphql.DateTime},
 		},
@@ -551,6 +595,7 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 		Name: "VoiceMessage",
 		Fields: graphql.Fields{
 			"id":              &graphql.Field{Type: graphql.Int},
+			"guestName":       &graphql.Field{Type: graphql.String},
 			"note":            &graphql.Field{Type: graphql.String},
 			"durationSeconds": &graphql.Field{Type: graphql.Int},
 			"mimeType":        &graphql.Field{Type: graphql.String},
@@ -582,7 +627,7 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 					}
 					ctx, cancel := context.WithTimeout(p.Context, 3*time.Second)
 					defer cancel()
-					rows, err := s.pool.Query(ctx, `SELECT id, text, created_at FROM messages ORDER BY created_at DESC LIMIT $1`, limit)
+					rows, err := s.pool.Query(ctx, `SELECT id, guest_name, text, created_at FROM messages ORDER BY created_at DESC LIMIT $1`, limit)
 					if err != nil {
 						return nil, err
 					}
@@ -590,7 +635,7 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 					var out []message
 					for rows.Next() {
 						var m message
-						if err := rows.Scan(&m.ID, &m.Text, &m.CreatedAt); err != nil {
+						if err := rows.Scan(&m.ID, &m.GuestName, &m.Text, &m.CreatedAt); err != nil {
 							return nil, err
 						}
 						out = append(out, m)
@@ -610,7 +655,7 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 					}
 					ctx, cancel := context.WithTimeout(p.Context, 3*time.Second)
 					defer cancel()
-					rows, err := s.pool.Query(ctx, `SELECT id, COALESCE(note, ''), duration_seconds, mime_type, created_at FROM voice_messages ORDER BY created_at DESC LIMIT $1`, limit)
+					rows, err := s.pool.Query(ctx, `SELECT id, guest_name, COALESCE(note, ''), duration_seconds, mime_type, created_at FROM voice_messages ORDER BY created_at DESC LIMIT $1`, limit)
 					if err != nil {
 						return nil, err
 					}
@@ -618,7 +663,7 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 					var out []voiceMessageMetadata
 					for rows.Next() {
 						var vm voiceMessageMetadata
-						if err := rows.Scan(&vm.ID, &vm.Note, &vm.DurationSeconds, &vm.MimeType, &vm.CreatedAt); err != nil {
+						if err := rows.Scan(&vm.ID, &vm.GuestName, &vm.Note, &vm.DurationSeconds, &vm.MimeType, &vm.CreatedAt); err != nil {
 							return nil, err
 						}
 						out = append(out, vm)
@@ -635,11 +680,20 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 			"submitMessage": &graphql.Field{
 				Type: graphql.Boolean,
 				Args: graphql.FieldConfigArgument{
+					"name": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 					"text": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 				},
 				Resolve: func(p graphql.ResolveParams) (any, error) {
+					name, _ := p.Args["name"].(string)
 					text, _ := p.Args["text"].(string)
+					name = strings.TrimSpace(name)
 					text = strings.TrimSpace(text)
+					if name == "" {
+						return false, errors.New("name is required")
+					}
+					if len([]rune(name)) > maxNameLength {
+						return false, errors.New("name is too long")
+					}
 					if text == "" {
 						return false, errors.New("message cannot be empty")
 					}
@@ -648,8 +702,8 @@ func buildGraphQLSchema(s *server) (*graphql.Schema, error) {
 					}
 					ctx, cancel := context.WithTimeout(p.Context, 3*time.Second)
 					defer cancel()
-					const insertQuery = `INSERT INTO messages(text) VALUES ($1)`
-					if _, err := s.pool.Exec(ctx, insertQuery, text); err != nil {
+					const insertQuery = `INSERT INTO messages(guest_name, text) VALUES ($1, $2)`
+					if _, err := s.pool.Exec(ctx, insertQuery, name, text); err != nil {
 						return false, err
 					}
 					return true, nil

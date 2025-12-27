@@ -61,8 +61,10 @@ export default function App() {
           <ul className="list">
             {messages.map((m) => (
               <li key={m.id} className="card">
+                <p className="meta">
+                  {m.guestName || 'Anonymous'} · {new Date(m.createdAt).toLocaleString()}
+                </p>
                 <p className="body">{m.text}</p>
-                <p className="meta">{new Date(m.createdAt).toLocaleString()}</p>
               </li>
             ))}
           </ul>
@@ -80,7 +82,7 @@ export default function App() {
             {voiceMessages.map((v) => (
               <li key={v.id} className="card">
                 <p className="meta">
-                  {new Date(v.createdAt).toLocaleString()} · {v.durationSeconds}s
+                  {v.guestName || 'Anonymous'} · {new Date(v.createdAt).toLocaleString()} · {v.durationSeconds}s
                 </p>
                 {v.note && <p className="body">{v.note}</p>}
                 <audio controls src={v.audioUrl} preload="none"></audio>

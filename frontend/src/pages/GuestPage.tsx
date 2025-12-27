@@ -5,6 +5,7 @@ import { submitMessage } from '../lib/api'
 const MAX_LENGTH = 500
 
 export default function GuestPage() {
+  const [name, setName] = useState('')
   const [text, setText] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
@@ -13,6 +14,11 @@ export default function GuestPage() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!name.trim()) {
+      setError('Please add your name before sending.')
+      setStatus('error')
+      return
+    }
     if (!text.trim()) {
       setError('Please write something thoughtful before sending.')
       setStatus('error')
@@ -22,8 +28,9 @@ export default function GuestPage() {
     try {
       setStatus('loading')
       setError('')
-      await submitMessage(text.trim())
+      await submitMessage(name.trim(), text.trim())
       setText('')
+      setName(name.trim())
       setStatus('success')
     } catch (err) {
       setStatus('error')
@@ -39,6 +46,18 @@ export default function GuestPage() {
           This goes straight to their private guestbook. Keep it short and sweet!
         </p>
         <form className="message-form" onSubmit={handleSubmit}>
+          <label htmlFor="guest-name">Your name</label>
+          <input
+            id="guest-name"
+            name="name"
+            type="text"
+            maxLength={80}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Jane & John"
+            disabled={status === 'loading'}
+            required
+          />
           <label htmlFor="guest-message">Your message</label>
           <textarea
             id="guest-message"
@@ -66,7 +85,7 @@ export default function GuestPage() {
       <section className="panel">
         <h2>Prefer to speak?</h2>
         <p className="panel-subtitle">Record up to 60 seconds.</p>
-        <VoiceRecorder />
+        <VoiceRecorder defaultName={name} onNameChange={setName} />
       </section>
     </div>
   )
