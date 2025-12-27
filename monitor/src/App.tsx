@@ -132,7 +132,15 @@ export default function App() {
                   {v.guestName || 'Anonymous'} · {new Date(v.createdAt).toLocaleString()} · {v.durationSeconds}s
                 </p>
                 {v.note && <p className="body">{v.note}</p>}
-                <audio controls src={v.audioUrl} preload="none"></audio>
+                {v.audioUrl ? (
+                  <audio controls preload="none">
+                    <source src={v.audioUrl} type={v.mimeType || 'audio/webm'} />
+                    <source src={v.audioUrl} />
+                    Your browser does not support the audio element.
+                  </audio>
+                ) : (
+                  <p className="muted small">Audio unavailable — failed to load.</p>
+                )}
               </li>
             ))}
           </ul>

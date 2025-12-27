@@ -39,6 +39,7 @@ export type VoiceMessage = {
   durationSeconds: number
   createdAt: string
   audioUrl: string
+  mimeType: string
 }
 
 function withApiBase(path: string) {
@@ -51,13 +52,15 @@ async function fetchVoiceAudio(id: number): Promise<string> {
     headers: {
       ...adminAuthHeader(),
     },
+    mode: 'cors',
   })
   if (!response.ok) {
     const text = await response.text().catch(() => '')
     throw new Error(text || 'Failed to load audio')
   }
-  const blob = await response.blob()
-  return URL.createObjectURL(blob)
+  const mime = response.headers.get('Content-Type') ?? 'audio/webm'
+  const buffer = await response.arrayBuffer()
+  return bufferToDataUrl(buffer, mime)
 }
 
 function adminAuthHeader(): Record<string, string> {
@@ -69,6 +72,16 @@ function adminAuthHeader(): Record<string, string> {
 type GraphQLResponse<T> = {
   data?: T
   errors?: { message: string }[]
+}
+
+function bufferToDataUrl(buffer: ArrayBuffer, mime: string): string {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  const base64 = btoa(binary)
+  return `data:${mime};base64,${base64}`
 }
 
 async function graphQLFetch<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
@@ -132,14 +145,27 @@ export async function listVoiceMessages(signal?: AbortSignal): Promise<VoiceMess
   )
   const withAudio = await Promise.all(
     data.voiceMessages.map(async (item) => {
-      const audioUrl = await fetchVoiceAudio(item.id)
-      return {
-        id: item.id,
-        guestName: item.guestName,
-        note: item.note,
-        durationSeconds: item.durationSeconds,
-        createdAt: item.createdAt,
-        audioUrl,
+      try {
+        const audioUrl = await fetchVoiceAudio(item.id)
+        return {
+          id: item.id,
+          guestName: item.guestName,
+          note: item.note,
+          durationSeconds: item.durationSeconds,
+          createdAt: item.createdAt,
+          audioUrl,
+          mimeType: item.mimeType || 'audio/webm',
+        }
+      } catch (err) {
+        return {
+          id: item.id,
+          guestName: item.guestName,
+          note: item.note,
+          durationSeconds: item.durationSeconds,
+          createdAt: item.createdAt,
+          audioUrl: '',
+          mimeType: item.mimeType || 'audio/webm',
+        }
       }
     }),
   )
