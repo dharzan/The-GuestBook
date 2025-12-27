@@ -46,6 +46,20 @@ function withApiBase(path: string) {
   return `${API_BASE}${path}`
 }
 
+async function fetchVoiceAudio(id: number): Promise<string> {
+  const response = await fetch(withApiBase(`/voice-messages/${id}/audio`), {
+    headers: {
+      ...adminAuthHeader(),
+    },
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(text || 'Failed to load audio')
+  }
+  const blob = await response.blob()
+  return URL.createObjectURL(blob)
+}
+
 function adminAuthHeader(): Record<string, string> {
   if (!ADMIN_USER || !ADMIN_PASS) return {}
   const token = btoa(`${ADMIN_USER}:${ADMIN_PASS}`)
@@ -116,12 +130,18 @@ export async function listVoiceMessages(signal?: AbortSignal): Promise<VoiceMess
     `,
     { limit: 200 },
   )
-  return data.voiceMessages.map((item) => ({
-    id: item.id,
-    guestName: item.guestName,
-    note: item.note,
-    durationSeconds: item.durationSeconds,
-    createdAt: item.createdAt,
-    audioUrl: withApiBase(`/voice-messages/${item.id}/audio`),
-  }))
+  const withAudio = await Promise.all(
+    data.voiceMessages.map(async (item) => {
+      const audioUrl = await fetchVoiceAudio(item.id)
+      return {
+        id: item.id,
+        guestName: item.guestName,
+        note: item.note,
+        durationSeconds: item.durationSeconds,
+        createdAt: item.createdAt,
+        audioUrl,
+      }
+    }),
+  )
+  return withAudio
 }
