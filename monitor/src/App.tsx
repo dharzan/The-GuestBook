@@ -34,6 +34,41 @@ export default function App() {
     })
   }, [])
 
+  const exportCsv = (rows: string[][], filename: string) => {
+    if (rows.length === 0) return
+    const csv = rows.map((r) => r.map((v) => `"${(v || '').replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportMessagesCsv = () => {
+    const rows = [
+      ['id', 'guestName', 'text', 'createdAt'],
+      ...messages.map((m) => [String(m.id), m.guestName || '', m.text, m.createdAt]),
+    ]
+    exportCsv(rows, 'messages.csv')
+  }
+
+  const exportVoiceCsv = () => {
+    const rows = [
+      ['id', 'guestName', 'note', 'durationSeconds', 'createdAt', 'audioUrl'],
+      ...voiceMessages.map((v) => [
+        String(v.id),
+        v.guestName || '',
+        v.note || '',
+        String(v.durationSeconds),
+        v.createdAt,
+        v.audioUrl,
+      ]),
+    ]
+    exportCsv(rows, 'voice-messages.csv')
+  }
+
   return (
     <div className="app">
       <header className="hero">
@@ -42,9 +77,17 @@ export default function App() {
           <h1>Guestbook monitor</h1>
           <p className="muted">Messages and voice notes submitted from the QR form.</p>
         </div>
-        <button type="button" onClick={load} disabled={status === 'loading'} className="refresh-btn">
-          {status === 'loading' ? 'Refreshing…' : 'Refresh'}
-        </button>
+        <div className="hero-actions">
+          <button type="button" onClick={load} disabled={status === 'loading'} className="refresh-btn">
+            {status === 'loading' ? 'Refreshing…' : 'Refresh'}
+          </button>
+          <button type="button" onClick={exportMessagesCsv} disabled={messages.length === 0}>
+            Export messages CSV
+          </button>
+          <button type="button" onClick={exportVoiceCsv} disabled={voiceMessages.length === 0}>
+            Export voice CSV
+          </button>
+        </div>
       </header>
 
       {status === 'error' && <div className="alert">Warning: {error}</div>}
