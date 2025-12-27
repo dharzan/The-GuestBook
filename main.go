@@ -29,7 +29,7 @@ const (
 	staticIndexFile         = "index.html"
 	maxAudioDurationSeconds = 60
 	maxAudioBytes           = 2 << 20 // 2MB
-	maxListLimit            = 200
+	maxListLimit            = 400
 	maxNameLength           = 80
 )
 

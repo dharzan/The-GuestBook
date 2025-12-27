@@ -103,7 +103,7 @@ export async function listMessages(signal?: AbortSignal): Promise<Message[]> {
         }
       }
     `,
-    { limit: 200 },
+    { limit: 400 },
   )
   return data.messages.map((item) => ({
     id: item.id,
@@ -128,7 +128,7 @@ export async function listVoiceMessages(signal?: AbortSignal): Promise<VoiceMess
         }
       }
     `,
-    { limit: 200 },
+    { limit: 400 },
   )
   const withAudio = await Promise.all(
     data.voiceMessages.map(async (item) => {

@@ -53,7 +53,7 @@ export default function App() {
         <section className="panel">
           <div className="panel-head">
             <h2>Text messages</h2>
-            <p className="muted small">Newest first · capped at 200</p>
+            <p className="muted small">Newest first · capped at 400</p>
           </div>
           {messages.length === 0 && status !== 'loading' && (
             <p className="muted">No messages yet.</p>
@@ -73,7 +73,7 @@ export default function App() {
         <section className="panel">
           <div className="panel-head">
             <h2>Voice notes</h2>
-            <p className="muted small">Newest first · capped at 200</p>
+            <p className="muted small">Newest first · capped at 400</p>
           </div>
           {voiceMessages.length === 0 && status !== 'loading' && (
             <p className="muted">No voice notes yet.</p>
